@@ -22,7 +22,7 @@
 const puntos = posts.map(d => ({
   x: new Date(d.fecha),
   y: Math.random() * 20 + 40,
-  r: Math.sqrt(d.views) / 25,
+  r: (d.impacto * 30) + 3,
   url: d.url,
   id: d.id,
   views: d.views,
