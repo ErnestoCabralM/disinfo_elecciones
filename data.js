@@ -2,14 +2,17 @@ Papa.parse("data.csv", {
   download: true,
   header: true,
   complete: function(results) {
-    const posts = results.data;
+    const posts = results.data.filter(d => d["Hora ISO"] && d["Hora ISO"].trim() !== "");
+    
     const puntos = posts.map(d => {
-      const impacto = d.Impacto ? parseFloat(d.Impacto) : 0;
-      const views = d.Views 
-        ? parseInt(d.Views.toString().replace(/\./g, "")) 
+      const impacto = d.Impacto 
+        ? parseFloat(d.Impacto.toString().replace(/"/g, "").replace(",", ".")) 
+        : 0;
+      const views = d.Views && d.Views !== "-"
+        ? parseInt(d.Views.toString().replace(/\./g, "").replace(",", "."))
         : 0;
       return {
-        x: new Date(d["Hora ISO"]),
+        x: new Date(d["Hora ISO"].trim()),
         y: Math.random() * 20 + 40,
         r: (impacto * 30) + 3,
         url: d.URL,
@@ -18,12 +21,14 @@ Papa.parse("data.csv", {
         plataforma: d.Plataforma
       };
     });
+
     const colores = posts.map(d =>
       d.Plataforma === "X" ? "#000000" :
       d.Plataforma === "Facebook" ? "#1877F2" :
       d.Plataforma === "TikTok" ? "#7A00FF" :
       "#999999"
     );
+
     new Chart(document.getElementById("chart"), {
       type: 'bubble',
       data: {
