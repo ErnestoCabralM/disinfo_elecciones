@@ -9,9 +9,77 @@ h1 {
   text-align: center;
 }
 
-canvas {
-  max-width: 100%;
+#chart {
   background: white;
   border-radius: 12px;
   padding: 10px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+svg {
+  display: block;
+}
+
+.tick text {
+  font-size: 12px;
+  fill: #555;
+}
+
+.day-label {
+  font-size: 13px;
+  font-weight: bold;
+  fill: #222;
+}
+
+.day-line {
+  stroke: #ccc;
+  stroke-width: 1;
+  stroke-dasharray: 4 2;
+}
+
+.bubble {
+  opacity: 0.85;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.bubble:hover {
+  opacity: 1;
+  stroke: #333;
+  stroke-width: 1.5;
+}
+
+.tooltip {
+  position: absolute;
+  background: rgba(0,0,0,0.75);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+#leyenda {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.leyenda-circulo {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
 }
