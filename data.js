@@ -29,7 +29,7 @@ Papa.parse("data.csv", {
         };
       });
 
-    // Leyenda
+    // Leyenda de colores
     const plataformasUnicas = [...new Set(posts.map(d => d.plataforma))];
     const leyenda = document.getElementById("leyenda");
     plataformasUnicas.forEach(p => {
@@ -41,6 +41,24 @@ Papa.parse("data.csv", {
       `;
       leyenda.appendChild(item);
     });
+
+    // Leyenda de tamaño
+    const tamanios = [0.1, 0.3, 0.6, 1.0];
+    const leyendaTam = document.createElement("div");
+    leyendaTam.style.cssText = "display:flex; align-items:flex-end; gap:16px; justify-content:center; margin-bottom:16px;";
+    tamanios.forEach(val => {
+      const r = (val * 30) + 3;
+      const item = document.createElement("div");
+      item.style.cssText = "display:flex; flex-direction:column; align-items:center; gap:4px;";
+      item.innerHTML = `
+        <svg width="${r*2+2}" height="${r*2+2}">
+          <circle cx="${r+1}" cy="${r+1}" r="${r}" fill="#aaa" opacity="0.85"/>
+        </svg>
+        <span style="font-size:11px; color:#555;">imp. ${val.toFixed(1)}</span>
+      `;
+      leyendaTam.appendChild(item);
+    });
+    document.getElementById("leyenda").after(leyendaTam);
 
     // Dimensiones
     const margin = { top: 20, right: 30, bottom: 60, left: 20 };
@@ -66,7 +84,7 @@ Papa.parse("data.csv", {
       .domain([xMin, xMax])
       .range([0, width]);
 
-    // Escala Y aleatoria pero fija por punto
+    // Escala Y
     const yScale = d3.scaleLinear()
       .domain([0, 100])
       .range([height, 0]);
@@ -77,7 +95,7 @@ Papa.parse("data.csv", {
       d3.timeDay.offset(d3.timeDay.floor(xMax), 1)
     );
 
-    // Líneas divisoras y etiquetas de día (nivel inferior)
+    // Líneas divisoras y etiquetas de día
     dias.forEach(dia => {
       const x = xScale(dia);
       if (x > 0) {
@@ -99,7 +117,7 @@ Papa.parse("data.csv", {
         .text(d3.timeFormat("%-d de %B")(dia));
     });
 
-    // Eje X de horas (nivel superior)
+    // Eje X de horas
     const xAxis = d3.axisBottom(xScale)
       .ticks(d3.timeHour.every(2))
       .tickFormat(d3.timeFormat("%H:%M"));
