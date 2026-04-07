@@ -27,7 +27,11 @@ const puntos = posts.map(d => ({
   id: d.id,
   views: d.views,
   plataforma: d.plataforma,
-  backgroundColor: "#000000"
+  backgroundColor:
+    d.plataforma === "X" ? "#000000" :
+    d.plataforma === "Facebook" ? "#1877F2" :
+    d.plataforma === "TikTok" ? "#7A00FF" :
+    "#999999"
 }));
 
 const chart = new Chart(document.getElementById("chart"), {
