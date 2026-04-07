@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Difusión de encuesta falsa</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<h1>Difusión de encuesta falsa en X</h1>
+
+<canvas id="chart"></canvas>
+
+<script src="data.js"></script>
+
+<script>
+const puntos = posts.map(d => ({
+  x: new Date(d.fecha),
+  y: Math.random() * 20 + 40,
+  r: Math.sqrt(d.views) / 25,
+  url: d.url,
+  id: d.id,
+  views: d.views,
+  plataforma: d.plataforma,
+  backgroundColor: "#000000"
+}));
+
+const chart = new Chart(document.getElementById("chart"), {
+  type: 'bubble',
+  data: {
+    datasets: [{
+      label: 'Posts',
+      data: puntos
+    }]
+  },
+  options: {
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const d = context.raw;
+            return `Post: ${d.id} | Views: ${d.views}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          unit: 'hour'
+        },
+        title: {
+          display: true,
+          text: 'Tiempo'
+        }
+      },
+      y: {
+        display: false
+      }
+    },
+    onClick: (e, elements) => {
+      if (elements.length > 0) {
+        const index = elements[0].index;
+        const punto = puntos[index];
+        window.open(punto.url, "_blank");
+      }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
