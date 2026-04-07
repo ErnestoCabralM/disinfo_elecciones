@@ -6,17 +6,17 @@ Papa.parse("data.csv", {
 
     const posts = results.data;
 
-    // 🔧 limpiar y mapear datos
     const puntos = posts.map(d => {
 
-      // limpiar views (ej: "53.100" → 53100)
-      const views = d.Views ? parseInt(d.Views.replace(/\./g, "")) : 0;
-
-      // impacto (si existe)
       const impacto = d.Impacto ? parseFloat(d.Impacto) : 0;
 
+      // limpiar views si tiene puntos tipo 53.100
+      const views = d.Views 
+        ? parseInt(d.Views.toString().replace(/\./g, "")) 
+        : 0;
+
       return {
-        x: new Date(d["Fecha y Hora"]),
+        x: new Date(d["Hora ISO"]),   // 👈 CAMBIO AQUÍ
         y: Math.random() * 20 + 40,
         r: (impacto * 30) + 3,
         url: d.URL,
@@ -26,7 +26,6 @@ Papa.parse("data.csv", {
       };
     });
 
-    // 🎨 colores
     const colores = posts.map(d =>
       d.Plataforma === "X" ? "#000000" :
       d.Plataforma === "Facebook" ? "#1877F2" :
@@ -34,7 +33,6 @@ Papa.parse("data.csv", {
       "#999999"
     );
 
-    // 📊 gráfico
     new Chart(document.getElementById("chart"), {
       type: 'bubble',
       data: {
