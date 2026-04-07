@@ -1,22 +1,15 @@
-<script>
 Papa.parse("data.csv", {
   download: true,
   header: true,
   complete: function(results) {
-
     const posts = results.data;
-
     const puntos = posts.map(d => {
-
       const impacto = d.Impacto ? parseFloat(d.Impacto) : 0;
-
-      // limpiar views si tiene puntos tipo 53.100
       const views = d.Views 
         ? parseInt(d.Views.toString().replace(/\./g, "")) 
         : 0;
-
       return {
-        x: new Date(d["Hora ISO"]),   // 👈 CAMBIO AQUÍ
+        x: new Date(d["Hora ISO"]),
         y: Math.random() * 20 + 40,
         r: (impacto * 30) + 3,
         url: d.URL,
@@ -25,14 +18,12 @@ Papa.parse("data.csv", {
         plataforma: d.Plataforma
       };
     });
-
     const colores = posts.map(d =>
       d.Plataforma === "X" ? "#000000" :
       d.Plataforma === "Facebook" ? "#1877F2" :
       d.Plataforma === "TikTok" ? "#7A00FF" :
       "#999999"
     );
-
     new Chart(document.getElementById("chart"), {
       type: 'bubble',
       data: {
@@ -75,7 +66,5 @@ Papa.parse("data.csv", {
         }
       }
     });
-
   }
 });
-</script>
