@@ -55,6 +55,22 @@ h1{
   color: #444;
 }
 
+.descripcion {
+  max-width: 750px;
+  margin: 10px auto 25px;
+  padding: 16px 20px;
+
+  background: #fafafa;
+  border-left: 4px solid #1D1D1B;
+  border-radius: 8px;
+
+  font-family: "Courier New", monospace;
+  font-size: 15px;
+  line-height: 1.6;
+
+  color: #333;
+}
+
 /* CONTENEDOR DEL GRÁFICO */
 #chart {
   background: white;
