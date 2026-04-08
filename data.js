@@ -88,10 +88,10 @@ Papa.parse("data.csv", {
     // Centrar el SVG en su contenedor
     const svgEl = d3.select("#chart")
       .append("svg")
-      .attr("width", svgWidth)
-      .attr("height", height + marginTop + marginBottom)
-      .style("display", "block")
-      .style("margin", "0 auto");
+      .attr("viewBox", `0 0 ${svgWidth} ${height + marginTop + marginBottom}`)
+      .attr("preserveAspectRatio", "xMidYMid meet")
+      .style("width", "100%")
+      .style("height", "auto");
 
     const svg = svgEl.append("g")
       .attr("transform", `translate(${marginLeft},${marginTop})`);
