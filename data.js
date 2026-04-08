@@ -24,12 +24,20 @@ Papa.parse("data.csv", {
           r: Math.max((impacto * 45) + 6, 6),
           url: d.URL,
           id: d["ID_publicación"],
-          views: views,
+        
           plataforma: d.Plataforma,
+          usuario: d.usuario, // 👈 asegúrate que así se llama en tu CSV
+        
+          likes: d.Likes ? parseInt(d.Likes) : 0,
+          shares: d.Shares ? parseInt(d.Shares) : 0,
+          comentarios: d.Comments ? parseInt(d.Comments) : 0,
+        
+          views: views,
+        
           color: colores[d.Plataforma] || "#999999",
           id_caso: d.ID_caso,
           nombre_caso: d.Nombre_caso
-        };
+          };
       });
 
     const casos = [...new Map(todosLosPosts.map(d => [d.id_caso, d.nombre_caso])).entries()];
