@@ -72,52 +72,54 @@ Papa.parse("data.csv", {
       .append("div")
       .attr("class", "tooltip");
 
-    // Dimensiones
-    const margin = { top: 40, right: 30, bottom: 20, left: 70 };
-    const colWidth = 120;
-    const height = 600;
-
     // Plataformas únicas en todo el dataset
     const plataformas = [...new Set(todosLosPosts.map(d => d.plataforma))];
 
+    // Dimensiones — ancho fijo centrado, columnas iguales
+    const colWidth = 160;
+    const marginLeft = 80;  // espacio para eje Y de horas
+    const marginRight = 30;
+    const marginTop = 50;
+    const marginBottom = 20;
+    const height = 650;
     const totalWidth = colWidth * plataformas.length;
+    const svgWidth = totalWidth + marginLeft + marginRight;
 
-    const svg = d3.select("#chart")
+    // Centrar el SVG en su contenedor
+    const svgEl = d3.select("#chart")
       .append("svg")
-      .attr("width", totalWidth + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+      .attr("width", svgWidth)
+      .attr("height", height + marginTop + marginBottom)
+      .style("display", "block")
+      .style("margin", "0 auto");
+
+    const svg = svgEl.append("g")
+      .attr("transform", `translate(${marginLeft},${marginTop})`);
 
     // Escala Y (tiempo)
     const yScale = d3.scaleTime().range([0, height]);
 
-    // Escala X por columna de plataforma
-    const xScale = d3.scalePoint()
+    // Escala X: columnas de igual ancho, centradas
+    const xScale = d3.scaleBand()
       .domain(plataformas)
       .range([0, totalWidth])
-      .padding(0.5);
-
-    const colActualWidth = xScale.step();
+      .padding(0.2);
 
     // Títulos de columnas
     plataformas.forEach(p => {
       svg.append("text")
-        .attr("class", "col-title")
-        .attr("x", xScale(p))
-        .attr("y", -20)
+        .attr("x", xScale(p) + xScale.bandwidth() / 2)
+        .attr("y", -25)
         .attr("text-anchor", "middle")
         .attr("fill", colores[p] || "#999")
         .attr("font-weight", "bold")
-        .attr("font-size", "14px")
+        .attr("font-size", "15px")
         .text(p);
-    });
 
-    // Líneas de columna
-    plataformas.forEach(p => {
+      // Línea guía de columna
       svg.append("line")
-        .attr("x1", xScale(p))
-        .attr("x2", xScale(p))
+        .attr("x1", xScale(p) + xScale.bandwidth() / 2)
+        .attr("x2", xScale(p) + xScale.bandwidth() / 2)
         .attr("y1", 0)
         .attr("y2", height)
         .attr("stroke", "#e0e0e0")
@@ -125,75 +127,64 @@ Papa.parse("data.csv", {
         .attr("stroke-dasharray", "3 3");
     });
 
-    // Eje Y (horas)
+    // Eje Y de horas
     const yAxisG = svg.append("g");
 
-    // Contenedor de líneas de día
+    // Contenedor de separadores de día
     const diasG = svg.append("g").attr("class", "dias-g");
 
     function actualizarGrafico(posts) {
       const yMin = d3.min(posts, d => d.fecha);
       const yMax = d3.max(posts, d => d.fecha);
-
-      // Añadir un poco de padding arriba y abajo
       const pad = (yMax - yMin) * 0.05;
       yScale.domain([new Date(yMin - pad), new Date(yMax + pad)]);
 
-      // Eje Y de horas
+      // Eje Y de horas — con margen izquierdo suficiente
       yAxisG.call(
         d3.axisLeft(yScale)
           .ticks(d3.timeHour.every(2))
           .tickFormat(d3.timeFormat("%H:%M"))
       ).selectAll("text").style("font-size", "11px");
 
-      // Días: líneas horizontales y etiquetas verticales
+      // Días: una sola etiqueta por día, a la izquierda del eje
       diasG.selectAll("*").remove();
       const dias = d3.timeDay.range(
         d3.timeDay.floor(yMin),
         d3.timeDay.offset(d3.timeDay.floor(yMax), 1)
       );
 
-      dias.forEach(dia => {
-        const y = yScale(dia);
-        if (y > 0 && y < height) {
-          diasG.append("line")
-            .attr("class", "day-line")
-            .attr("x1", -60)
-            .attr("x2", totalWidth)
-            .attr("y1", y)
-            .attr("y2", y);
-
-          diasG.append("text")
-            .attr("class", "day-label")
-            .attr("x", -65)
-            .attr("y", y)
-            .attr("text-anchor", "end")
-            .attr("dominant-baseline", "middle")
-            .attr("transform", `rotate(-90, ${-65}, ${y})`)
-            .text(d3.timeFormat("%-d de %B")(dia));
-        }
-
-        // Etiqueta del primer día (arriba del todo)
+      dias.forEach((dia, i) => {
+        const yDia = yScale(dia);
         const nextDia = d3.timeDay.offset(dia, 1);
         const yNext = Math.min(yScale(nextDia), height);
-        const yCenter = (Math.max(y, 0) + yNext) / 2;
+        const yCenter = (Math.max(yDia, 0) + yNext) / 2;
 
+        // Línea horizontal separadora (solo si no es el primer día)
+        if (yDia > 0 && yDia < height) {
+          diasG.append("line")
+            .attr("class", "day-line")
+            .attr("x1", -marginLeft)
+            .attr("x2", totalWidth)
+            .attr("y1", yDia)
+            .attr("y2", yDia);
+        }
+
+        // Etiqueta del día rotada, centrada en el bloque del día
         diasG.append("text")
           .attr("class", "day-label")
-          .attr("x", -8)
+          .attr("x", -marginLeft + 12)
           .attr("y", yCenter)
-          .attr("text-anchor", "end")
+          .attr("text-anchor", "middle")
           .attr("dominant-baseline", "middle")
-          .attr("transform", `rotate(-90, ${-8}, ${yCenter})`)
+          .attr("transform", `rotate(-90, ${-marginLeft + 12}, ${yCenter})`)
           .text(d3.timeFormat("%-d de %B")(dia));
       });
 
       // Burbujas
       svg.selectAll(".bubble").remove();
 
-      // Añadir jitter horizontal dentro de cada columna
       posts.forEach(d => {
-        d._jitter = (Math.random() - 0.5) * (colActualWidth * 0.4);
+        d._jitter = (Math.random() - 0.5) * (xScale.bandwidth() * 0.4);
       });
 
       svg.selectAll(".bubble")
@@ -201,7 +192,7 @@ Papa.parse("data.csv", {
         .enter()
         .append("circle")
         .attr("class", "bubble")
-        .attr("cx", d => xScale(d.plataforma) + d._jitter)
+        .attr("cx", d => xScale(d.plataforma) + xScale.bandwidth() / 2 + d._jitter)
         .attr("cy", d => yScale(d.fecha))
         .attr("r", d => d.r)
         .attr("fill", d => d.color)
