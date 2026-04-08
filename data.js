@@ -76,7 +76,7 @@ Papa.parse("data.csv", {
     const plataformas = [...new Set(todosLosPosts.map(d => d.plataforma))];
 
     // Dimensiones — ancho fijo centrado, columnas iguales
-    const colWidth = 160;
+    const colWidth = 300;
     const marginLeft = 80;  // espacio para eje Y de horas
     const marginRight = 30;
     const marginTop = 50;
