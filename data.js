@@ -58,13 +58,14 @@ Papa.parse("data.csv", {
     const colWidth = 300;
     const marginLeft = 80;
     const marginTop = 50;
+    const marginBottom = 20;
     const height = 650;
     const totalWidth = colWidth * plataformas.length;
     const svgWidth = totalWidth + marginLeft + 30;
 
     const svgEl = d3.select("#chart")
       .append("svg")
-      .attr("viewBox", `0 0 ${svgWidth} ${height + marginTop + 40}`)
+      .attr("viewBox", `0 0 ${svgWidth} ${height + marginTop + marginBottom}`)
       .style("width", "100%")
       .style("height", "auto");
 
@@ -78,6 +79,7 @@ Papa.parse("data.csv", {
       .range([0, totalWidth])
       .padding(0.2);
 
+    // títulos de columnas
     plataformas.forEach(p => {
       svg.append("text")
         .attr("x", xScale(p) + xScale.bandwidth()/2)
@@ -86,15 +88,26 @@ Papa.parse("data.csv", {
         .attr("fill", colores[p])
         .attr("font-weight", "bold")
         .text(p);
+
+      svg.append("line")
+        .attr("x1", xScale(p) + xScale.bandwidth()/2)
+        .attr("x2", xScale(p) + xScale.bandwidth()/2)
+        .attr("y1", 0)
+        .attr("y2", height)
+        .attr("stroke", "#e0e0e0")
+        .attr("stroke-dasharray", "3 3");
     });
 
     const yAxisG = svg.append("g");
+    const diasG = svg.append("g");
 
     function actualizarGrafico(posts) {
 
       const yMin = d3.min(posts, d => d.fecha);
       const yMax = d3.max(posts, d => d.fecha);
-      yScale.domain([yMin, yMax]);
+      const pad = (yMax - yMin) * 0.05;
+
+      yScale.domain([new Date(yMin - pad), new Date(yMax + pad)]);
 
       yAxisG.call(
         d3.axisLeft(yScale)
@@ -102,20 +115,48 @@ Papa.parse("data.csv", {
           .tickFormat(d3.timeFormat("%H:%M"))
       );
 
-      // 🔥 POSICIONES BASE
+      // 🔵 DÍAS (restaurado)
+      diasG.selectAll("*").remove();
+
+      const dias = d3.timeDay.range(
+        d3.timeDay.floor(yMin),
+        d3.timeDay.offset(d3.timeDay.floor(yMax), 1)
+      );
+
+      dias.forEach(dia => {
+        const yDia = yScale(dia);
+
+        if (yDia > 0 && yDia < height) {
+          diasG.append("line")
+            .attr("class", "day-line")
+            .attr("x1", -marginLeft)
+            .attr("x2", totalWidth)
+            .attr("y1", yDia)
+            .attr("y2", yDia);
+        }
+
+        diasG.append("text")
+          .attr("class", "day-label")
+          .attr("x", -marginLeft + 12)
+          .attr("y", yDia + 10)
+          .attr("text-anchor", "middle")
+          .attr("transform", `rotate(-90, ${-marginLeft + 12}, ${yDia + 10})`)
+          .text(d3.timeFormat("%-d de %B")(dia));
+      });
+
+      // 🔥 posiciones base
       posts.forEach(d => {
         d.x = xScale(d.plataforma) + xScale.bandwidth()/2;
         d.y = yScale(d.fecha);
       });
 
-      // 🔥 SIMULACIÓN
+      // 🔥 force simulation
       const simulation = d3.forceSimulation(posts)
         .force("x", d3.forceX(d => xScale(d.plataforma) + xScale.bandwidth()/2).strength(1))
         .force("y", d3.forceY(d => yScale(d.fecha)).strength(1))
-        .force("collision", d3.forceCollide(d => d.r + 1)) // 👈 clave
+        .force("collision", d3.forceCollide(d => d.r + 2))
         .stop();
 
-      // correr simulación manualmente
       for (let i = 0; i < 120; i++) simulation.tick();
 
       svg.selectAll(".bubble").remove();
