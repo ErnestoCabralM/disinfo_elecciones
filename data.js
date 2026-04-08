@@ -11,9 +11,8 @@ Papa.parse("data.csv", {
     const todosLosPosts = results.data
       .filter(d => d["Hora ISO"] && d["Hora ISO"].trim() !== "")
       .map(d => {
-        const impacto = d.Impacto
-          ? parseFloat(d.Impacto.toString().replace(/"/g, "").replace(",", "."))
-          : 0;
+        const impactoRaw = parseFloat(d.Impacto ? d.Impacto.toString().replace(/"/g, "").replace(",", ".") : "0");
+        const impacto = isNaN(impactoRaw) ? 0 : impactoRaw;
         const views = d.Views && d.Views !== "-"
           ? parseInt(d.Views.toString().replace(/\./g, "").replace(",", "."))
           : 0;
@@ -52,23 +51,9 @@ Papa.parse("data.csv", {
       filtroCasos.appendChild(btn);
     });
 
-    // Leyenda de colores (se construye una sola vez)
-    const plataformasUnicas = [...new Set(todosLosPosts.map(d => d.plataforma))];
-    const leyenda = document.getElementById("leyenda");
-    plataformasUnicas.forEach(p => {
-      const item = document.createElement("div");
-      item.className = "leyenda-item";
-      item.innerHTML = `
-        <span class="leyenda-circulo" style="background:${colores[p] || '#999'}"></span>
-        <span>${p}</span>
-      `;
-      leyenda.appendChild(item);
-    });
-
-    // Leyenda de tamaño (se construye una sola vez)
+    // Leyenda de tamaño
     const tamanios = [0.1, 0.3, 0.6, 1.0];
     const leyendaTam = document.getElementById("leyenda-tam");
-    leyendaTam.style.cssText = "display:flex; align-items:flex-end; gap:16px; justify-content:center; margin-bottom:16px;";
     tamanios.forEach(val => {
       const r = (val * 30) + 3;
       const item = document.createElement("div");
@@ -88,86 +73,149 @@ Papa.parse("data.csv", {
       .attr("class", "tooltip");
 
     // Dimensiones
-    const margin = { top: 20, right: 30, bottom: 60, left: 20 };
-    const width = Math.max(document.getElementById("chart").clientWidth - 40, 600);
-    const height = 320;
+    const margin = { top: 40, right: 30, bottom: 20, left: 70 };
+    const colWidth = 120;
+    const height = 600;
+
+    // Plataformas únicas en todo el dataset
+    const plataformas = [...new Set(todosLosPosts.map(d => d.plataforma))];
+
+    const totalWidth = colWidth * plataformas.length;
 
     const svg = d3.select("#chart")
       .append("svg")
-      .attr("width", width + margin.left + margin.right)
+      .attr("width", totalWidth + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Escalas
-    const xScale = d3.scaleTime().range([0, width]);
-    const yScale = d3.scaleLinear().domain([0, 100]).range([height, 0]);
+    // Escala Y (tiempo)
+    const yScale = d3.scaleTime().range([0, height]);
 
-    // Eje X (contenedor, se actualiza)
-    const xAxisG = svg.append("g")
-      .attr("transform", `translate(0,${height})`);
+    // Escala X por columna de plataforma
+    const xScale = d3.scalePoint()
+      .domain(plataformas)
+      .range([0, totalWidth])
+      .padding(0.5);
 
-    // Contenedor de líneas y etiquetas de días
+    const colActualWidth = xScale.step();
+
+    // Títulos de columnas
+    plataformas.forEach(p => {
+      svg.append("text")
+        .attr("class", "col-title")
+        .attr("x", xScale(p))
+        .attr("y", -20)
+        .attr("text-anchor", "middle")
+        .attr("fill", colores[p] || "#999")
+        .attr("font-weight", "bold")
+        .attr("font-size", "14px")
+        .text(p);
+    });
+
+    // Líneas de columna
+    plataformas.forEach(p => {
+      svg.append("line")
+        .attr("x1", xScale(p))
+        .attr("x2", xScale(p))
+        .attr("y1", 0)
+        .attr("y2", height)
+        .attr("stroke", "#e0e0e0")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "3 3");
+    });
+
+    // Eje Y (horas)
+    const yAxisG = svg.append("g");
+
+    // Contenedor de líneas de día
     const diasG = svg.append("g").attr("class", "dias-g");
 
     function actualizarGrafico(posts) {
-      const xMin = d3.min(posts, d => d.fecha);
-      const xMax = d3.max(posts, d => d.fecha);
-      xScale.domain([xMin, xMax]);
+      const yMin = d3.min(posts, d => d.fecha);
+      const yMax = d3.max(posts, d => d.fecha);
 
-      // Eje X
-      xAxisG.call(
-        d3.axisBottom(xScale)
+      // Añadir un poco de padding arriba y abajo
+      const pad = (yMax - yMin) * 0.05;
+      yScale.domain([new Date(yMin - pad), new Date(yMax + pad)]);
+
+      // Eje Y de horas
+      yAxisG.call(
+        d3.axisLeft(yScale)
           .ticks(d3.timeHour.every(2))
           .tickFormat(d3.timeFormat("%H:%M"))
       ).selectAll("text").style("font-size", "11px");
 
-      // Días
+      // Días: líneas horizontales y etiquetas verticales
       diasG.selectAll("*").remove();
       const dias = d3.timeDay.range(
-        d3.timeDay.floor(xMin),
-        d3.timeDay.offset(d3.timeDay.floor(xMax), 1)
+        d3.timeDay.floor(yMin),
+        d3.timeDay.offset(d3.timeDay.floor(yMax), 1)
       );
+
       dias.forEach(dia => {
-        const x = xScale(dia);
-        if (x > 0) {
+        const y = yScale(dia);
+        if (y > 0 && y < height) {
           diasG.append("line")
             .attr("class", "day-line")
-            .attr("x1", x).attr("x2", x)
-            .attr("y1", 0).attr("y2", height + 30);
+            .attr("x1", -60)
+            .attr("x2", totalWidth)
+            .attr("y1", y)
+            .attr("y2", y);
+
+          diasG.append("text")
+            .attr("class", "day-label")
+            .attr("x", -65)
+            .attr("y", y)
+            .attr("text-anchor", "end")
+            .attr("dominant-baseline", "middle")
+            .attr("transform", `rotate(-90, ${-65}, ${y})`)
+            .text(d3.timeFormat("%-d de %B")(dia));
         }
+
+        // Etiqueta del primer día (arriba del todo)
         const nextDia = d3.timeDay.offset(dia, 1);
-        const xNext = Math.min(xScale(nextDia), width);
-        const xCenter = (Math.max(x, 0) + xNext) / 2;
+        const yNext = Math.min(yScale(nextDia), height);
+        const yCenter = (Math.max(y, 0) + yNext) / 2;
+
         diasG.append("text")
           .attr("class", "day-label")
-          .attr("x", xCenter)
-          .attr("y", height + 55)
-          .attr("text-anchor", "middle")
+          .attr("x", -8)
+          .attr("y", yCenter)
+          .attr("text-anchor", "end")
+          .attr("dominant-baseline", "middle")
+          .attr("transform", `rotate(-90, ${-8}, ${yCenter})`)
           .text(d3.timeFormat("%-d de %B")(dia));
       });
 
       // Burbujas
-      const burbujas = svg.selectAll(".bubble").data(posts, d => d.id);
+      svg.selectAll(".bubble").remove();
 
-      burbujas.enter()
+      // Añadir jitter horizontal dentro de cada columna
+      posts.forEach(d => {
+        d._jitter = (Math.random() - 0.5) * (colActualWidth * 0.4);
+      });
+
+      svg.selectAll(".bubble")
+        .data(posts)
+        .enter()
         .append("circle")
         .attr("class", "bubble")
-        .attr("cy", d => yScale(Math.random() * 60 + 20))
+        .attr("cx", d => xScale(d.plataforma) + d._jitter)
+        .attr("cy", d => yScale(d.fecha))
         .attr("r", d => d.r)
         .attr("fill", d => d.color)
-        .attr("cx", d => xScale(d.fecha))
         .on("mouseover", function(event, d) {
           tooltip.style("opacity", 1)
             .html(`<strong>${d.plataforma}</strong><br>Post: ${d.id}<br>Views: ${d.views.toLocaleString()}<br>Impacto: ${d.impacto.toFixed(3)}`);
         })
         .on("mousemove", function(event) {
-          tooltip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 28) + "px");
+          tooltip
+            .style("left", (event.pageX + 12) + "px")
+            .style("top", (event.pageY - 28) + "px");
         })
         .on("mouseout", () => tooltip.style("opacity", 0))
         .on("click", (event, d) => window.open(d.url, "_blank"));
-
-      burbujas.exit().remove();
     }
 
     // Cargar caso inicial
