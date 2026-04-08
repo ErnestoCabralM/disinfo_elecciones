@@ -9,11 +9,19 @@ Papa.parse("data.csv", {
       "TikTok":   "#7A00FF"
     };
 
+    // 🟡 DESCRIPCIONES POR CASO
+    const descripciones = {
+      "C00001": "Una encuesta falsa comenzó a circular la tarde del 4 de abril. Varias cuentas amplificaron el contenido en pocas horas, concentrando el mayor volumen de interacciones en X.",
+      "C00002": "Este caso muestra una difusión más lenta pero sostenida, con presencia en múltiples plataformas y picos de actividad al día siguiente.",
+      "C00003": "El contenido fue inicialmente marginal, pero logró escalar debido a cuentas con alto alcance que lo replicaron."
+    };
+
     const todosLosPosts = results.data
       .filter(d => d["Hora ISO"] && d["Hora ISO"].trim() !== "")
       .map(d => {
         const impactoRaw = parseFloat(d.Impacto ? d.Impacto.toString().replace(/"/g, "").replace(",", ".") : "0");
         const impacto = isNaN(impactoRaw) ? 0 : impactoRaw;
+
         const views = d.Views && d.Views !== "-" && d.Views !== "null"
           ? parseInt(d.Views.toString().replace(/\./g, "").replace(",", "."))
           : null;
@@ -24,36 +32,48 @@ Papa.parse("data.csv", {
           r: Math.max((impacto * 45) + 6, 6),
           url: d.URL,
           id: d["ID_publicación"],
-        
+
           plataforma: d.Plataforma,
-          usuario: d.usuario, // 👈 asegúrate que así se llama en tu CSV
-        
+          usuario: d.usuario, // 👈 asegúrate que coincide EXACTO con tu CSV
+
           likes: d.Likes ? parseInt(d.Likes) : 0,
           shares: d.Shares ? parseInt(d.Shares) : 0,
           comentarios: d.Comments ? parseInt(d.Comments) : 0,
-        
+
           views: views,
-        
+
           color: colores[d.Plataforma] || "#999999",
           id_caso: d.ID_caso,
           nombre_caso: d.Nombre_caso
-          };
+        };
       });
 
     const casos = [...new Map(todosLosPosts.map(d => [d.id_caso, d.nombre_caso])).entries()];
     const filtroCasos = document.getElementById("filtro-casos");
     let casoActivo = casos[0][0];
 
+    // 🟡 FUNCIÓN PARA ACTUALIZAR DESCRIPCIÓN
+    function actualizarDescripcion(casoId) {
+      const contenedor = document.getElementById("descripcion-caso");
+      contenedor.textContent = descripciones[casoId] || "Sin descripción disponible.";
+    }
+
+    // BOTONES
     casos.forEach(([id, nombre]) => {
       const btn = document.createElement("button");
       btn.className = "btn-caso" + (id === casoActivo ? " activo" : "");
       btn.textContent = nombre;
+
       btn.addEventListener("click", () => {
         casoActivo = id;
+
         document.querySelectorAll(".btn-caso").forEach(b => b.classList.remove("activo"));
         btn.classList.add("activo");
+
         actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
+        actualizarDescripcion(casoActivo); // 👈 clave
       });
+
       filtroCasos.appendChild(btn);
     });
 
@@ -123,7 +143,7 @@ Papa.parse("data.csv", {
           .tickFormat(d3.timeFormat("%H:%M"))
       );
 
-      // 🔵 DÍAS (restaurado)
+      // DÍAS
       diasG.selectAll("*").remove();
 
       const dias = d3.timeDay.range(
@@ -152,13 +172,13 @@ Papa.parse("data.csv", {
           .text(d3.timeFormat("%-d de %B")(dia));
       });
 
-      // 🔥 posiciones base
+      // posiciones base
       posts.forEach(d => {
         d.x = xScale(d.plataforma) + xScale.bandwidth()/2;
         d.y = yScale(d.fecha);
       });
 
-      // 🔥 force simulation
+      // simulación
       const simulation = d3.forceSimulation(posts)
         .force("x", d3.forceX(d => xScale(d.plataforma) + xScale.bandwidth()/2).strength(1))
         .force("y", d3.forceY(d => yScale(d.fecha)).strength(1))
@@ -198,6 +218,8 @@ Papa.parse("data.csv", {
         .on("click", (event, d) => window.open(d.url, "_blank"));
     }
 
+    // 🔵 CARGA INICIAL
     actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
+    actualizarDescripcion(casoActivo); // 👈 clave
   }
 });
