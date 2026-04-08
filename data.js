@@ -2,6 +2,7 @@ Papa.parse("data.csv", {
   download: true,
   header: true,
   complete: function(results) {
+
     const colores = {
       "X":        "#000000",
       "Facebook": "#1877F2",
@@ -16,6 +17,7 @@ Papa.parse("data.csv", {
         const views = d.Views && d.Views !== "-"
           ? parseInt(d.Views.toString().replace(/\./g, "").replace(",", "."))
           : 0;
+
         return {
           fecha: new Date(d["Hora ISO"].trim()),
           impacto: impacto,
@@ -38,7 +40,6 @@ Papa.parse("data.csv", {
       const btn = document.createElement("button");
       btn.className = "btn-caso" + (id === casoActivo ? " activo" : "");
       btn.textContent = nombre;
-      btn.dataset.id = id;
       btn.addEventListener("click", () => {
         casoActivo = id;
         document.querySelectorAll(".btn-caso").forEach(b => b.classList.remove("activo"));
@@ -46,21 +47,6 @@ Papa.parse("data.csv", {
         actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
       });
       filtroCasos.appendChild(btn);
-    });
-
-    const tamanios = [0.1, 0.3, 0.6, 1.0];
-    const leyendaTam = document.getElementById("leyenda-tam");
-    tamanios.forEach(val => {
-      const r = (val * 30) + 3;
-      const item = document.createElement("div");
-      item.style.cssText = "display:flex; flex-direction:column; align-items:center; gap:4px;";
-      item.innerHTML = `
-        <svg width="${r*2+2}" height="${r*2+2}">
-          <circle cx="${r+1}" cy="${r+1}" r="${r}" fill="#aaa" opacity="0.85"/>
-        </svg>
-        <span style="font-size:11px; color:#555;">imp. ${val.toFixed(1)}</span>
-      `;
-      leyendaTam.appendChild(item);
     });
 
     const tooltip = d3.select("body")
@@ -71,17 +57,14 @@ Papa.parse("data.csv", {
 
     const colWidth = 300;
     const marginLeft = 80;
-    const marginRight = 30;
     const marginTop = 50;
-    const marginBottom = 20;
     const height = 650;
     const totalWidth = colWidth * plataformas.length;
-    const svgWidth = totalWidth + marginLeft + marginRight;
+    const svgWidth = totalWidth + marginLeft + 30;
 
     const svgEl = d3.select("#chart")
       .append("svg")
-      .attr("viewBox", `0 0 ${svgWidth} ${height + marginTop + marginBottom}`)
-      .attr("preserveAspectRatio", "xMidYMid meet")
+      .attr("viewBox", `0 0 ${svgWidth} ${height + marginTop + 40}`)
       .style("width", "100%")
       .style("height", "auto");
 
@@ -97,30 +80,21 @@ Papa.parse("data.csv", {
 
     plataformas.forEach(p => {
       svg.append("text")
-        .attr("x", xScale(p) + xScale.bandwidth() / 2)
+        .attr("x", xScale(p) + xScale.bandwidth()/2)
         .attr("y", -25)
         .attr("text-anchor", "middle")
-        .attr("fill", colores[p] || "#999")
+        .attr("fill", colores[p])
         .attr("font-weight", "bold")
         .text(p);
-
-      svg.append("line")
-        .attr("x1", xScale(p) + xScale.bandwidth() / 2)
-        .attr("x2", xScale(p) + xScale.bandwidth() / 2)
-        .attr("y1", 0)
-        .attr("y2", height)
-        .attr("stroke", "#e0e0e0")
-        .attr("stroke-dasharray", "3 3");
     });
 
     const yAxisG = svg.append("g");
-    const diasG = svg.append("g");
 
     function actualizarGrafico(posts) {
+
       const yMin = d3.min(posts, d => d.fecha);
       const yMax = d3.max(posts, d => d.fecha);
-      const pad = (yMax - yMin) * 0.05;
-      yScale.domain([new Date(yMin - pad), new Date(yMax + pad)]);
+      yScale.domain([yMin, yMax]);
 
       yAxisG.call(
         d3.axisLeft(yScale)
@@ -128,39 +102,21 @@ Papa.parse("data.csv", {
           .tickFormat(d3.timeFormat("%H:%M"))
       );
 
-      diasG.selectAll("*").remove();
-
-      // 🔥 DISTRIBUCIÓN INTELIGENTE POR RADIO
-      const agrupados = d3.group(posts, d => d.plataforma);
-
-      agrupados.forEach(items => {
-        items.sort((a, b) => a.fecha - b.fecha);
-
-        let fila = [];
-        let lastY = null;
-
-        items.forEach(d => {
-          const y = yScale(d.fecha);
-
-          if (lastY !== null && Math.abs(y - lastY) < d.r * 2) {
-            fila.push(d);
-          } else {
-            distribuirFila(fila);
-            fila = [d];
-            lastY = y;
-          }
-        });
-
-        distribuirFila(fila);
+      // 🔥 POSICIONES BASE
+      posts.forEach(d => {
+        d.x = xScale(d.plataforma) + xScale.bandwidth()/2;
+        d.y = yScale(d.fecha);
       });
 
-      function distribuirFila(fila) {
-        const total = fila.length;
-        fila.forEach((d, i) => {
-          const offset = (i - (total - 1) / 2);
-          d._jitter = offset * (d.r * 1.8); // 🔥 usa radio
-        });
-      }
+      // 🔥 SIMULACIÓN
+      const simulation = d3.forceSimulation(posts)
+        .force("x", d3.forceX(d => xScale(d.plataforma) + xScale.bandwidth()/2).strength(1))
+        .force("y", d3.forceY(d => yScale(d.fecha)).strength(1))
+        .force("collision", d3.forceCollide(d => d.r + 1)) // 👈 clave
+        .stop();
+
+      // correr simulación manualmente
+      for (let i = 0; i < 120; i++) simulation.tick();
 
       svg.selectAll(".bubble").remove();
 
@@ -169,8 +125,8 @@ Papa.parse("data.csv", {
         .enter()
         .append("circle")
         .attr("class", "bubble")
-        .attr("cx", d => xScale(d.plataforma) + xScale.bandwidth() / 2 + (d._jitter || 0))
-        .attr("cy", d => yScale(d.fecha))
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
         .attr("r", d => d.r)
         .attr("fill", d => d.color)
         .on("mouseover", function(event, d) {
