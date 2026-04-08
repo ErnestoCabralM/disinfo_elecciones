@@ -5,14 +5,21 @@ body {
   padding: 20px;
 }
 
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
 h1 {
   text-align: center;
 }
 
+/* CONTENEDOR DEL GRÁFICO */
 #chart {
   background: white;
   border-radius: 12px;
-  padding: 10px;
+  padding: 20px;
+  margin-top: 10px;
   max-width: 100%;
   overflow-x: auto;
 }
@@ -21,6 +28,7 @@ svg {
   display: block;
 }
 
+/* EJES Y TIEMPO */
 .tick text {
   font-size: 12px;
   fill: #555;
@@ -38,6 +46,7 @@ svg {
   stroke-dasharray: 4 2;
 }
 
+/* BURBUJAS */
 .bubble {
   opacity: 0.85;
   cursor: pointer;
@@ -50,6 +59,7 @@ svg {
   stroke-width: 1.5;
 }
 
+/* TOOLTIP */
 .tooltip {
   position: absolute;
   background: rgba(0,0,0,0.75);
@@ -62,6 +72,7 @@ svg {
   transition: opacity 0.2s;
 }
 
+/* FILTROS */
 #filtro-casos {
   display: flex;
   gap: 10px;
@@ -90,6 +101,7 @@ svg {
   color: white;
 }
 
+/* LEYENDA */
 #leyenda-tam {
   display: flex;
   align-items: flex-end;
@@ -102,16 +114,4 @@ svg {
   font-size: 13px;
   font-weight: bold;
   text-anchor: middle;
-}
-
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-#chart {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 10px;
 }
