@@ -180,7 +180,14 @@ Papa.parse("data.csv", {
         .attr("fill", d => d.color)
         .on("mouseover", function(event, d) {
           tooltip.style("opacity", 1)
-            .html(`<strong>${d.plataforma}</strong><br>Post: ${d.id}<br>Views: ${d.views.toLocaleString()}<br>Impacto: ${d.impacto.toFixed(3)}`);
+            .html(`
+              <strong>${d.plataforma}</strong><br>
+              Difusor: ${d.usuario}<br>
+              Likes: ${d.likes.toLocaleString()}<br>
+              Reposts: ${d.shares.toLocaleString()}<br>
+              Comentarios: ${d.comentarios.toLocaleString()}<br>
+              Vistas: ${d.views.toLocaleString()}
+            `);
         })
         .on("mousemove", function(event) {
           tooltip
