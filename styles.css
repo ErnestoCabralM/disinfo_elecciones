@@ -83,3 +83,31 @@ svg {
   border-radius: 50%;
   display: inline-block;
 }
+
+#filtro-casos {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.btn-caso {
+  padding: 8px 20px;
+  border: 2px solid #333;
+  border-radius: 20px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  transition: all 0.2s;
+}
+
+.btn-caso:hover {
+  background: #f0f0f0;
+}
+
+.btn-caso.activo {
+  background: #333;
+  color: white;
+}
