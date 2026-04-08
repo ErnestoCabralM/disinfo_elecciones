@@ -14,9 +14,9 @@ Papa.parse("data.csv", {
       .map(d => {
         const impactoRaw = parseFloat(d.Impacto ? d.Impacto.toString().replace(/"/g, "").replace(",", ".") : "0");
         const impacto = isNaN(impactoRaw) ? 0 : impactoRaw;
-        const views = d.Views && d.Views !== "-"
+        const views = d.Views && d.Views !== "-" && d.Views !== "null"
           ? parseInt(d.Views.toString().replace(/\./g, "").replace(",", "."))
-          : 0;
+          : null;
 
         return {
           fecha: new Date(d["Hora ISO"].trim()),
@@ -186,7 +186,7 @@ Papa.parse("data.csv", {
               Likes: ${d.likes.toLocaleString()}<br>
               Reposts: ${d.shares.toLocaleString()}<br>
               Comentarios: ${d.comentarios.toLocaleString()}<br>
-              Vistas: ${d.views.toLocaleString()}
+              Vistas: ${d.views !== null ? d.views.toLocaleString() : "-"}
             `);
         })
         .on("mousemove", function(event) {
