@@ -55,7 +55,7 @@ Papa.parse("data.csv", {
 
     const plataformas = [...new Set(todosLosPosts.map(d => d.plataforma))];
 
-    const colWidth = 220;
+    const colWidth = 260;
     const marginLeft = 80;
     const marginTop = 50;
     const marginBottom = 20;
@@ -154,7 +154,7 @@ Papa.parse("data.csv", {
       const simulation = d3.forceSimulation(posts)
         .force("x", d3.forceX(d => xScale(d.plataforma) + xScale.bandwidth()/2).strength(1))
         .force("y", d3.forceY(d => yScale(d.fecha)).strength(1))
-        .force("collision", d3.forceCollide(d => d.r + 5)).iterations(2))
+        .force("collision", d3.forceCollide(d => d.r + 5).iterations(2))
         .stop();
 
       for (let i = 0; i < 300; i++) simulation.tick();
