@@ -10,6 +10,11 @@ body {
   margin: 0 auto;
 }
 
+.site-header{
+  background:#1D1D1B;
+  color:white;
+}
+
 h1{
   font-family:"Merriweather", serif;
   font-size:48px;
