@@ -62,28 +62,6 @@ svg {
   transition: opacity 0.2s;
 }
 
-#leyenda {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
-.leyenda-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-}
-
-.leyenda-circulo {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
 #filtro-casos {
   display: flex;
   gap: 10px;
@@ -110,4 +88,18 @@ svg {
 .btn-caso.activo {
   background: #333;
   color: white;
+}
+
+#leyenda-tam {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.col-title {
+  font-size: 13px;
+  font-weight: bold;
+  text-anchor: middle;
 }
