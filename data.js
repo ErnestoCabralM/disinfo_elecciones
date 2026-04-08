@@ -21,7 +21,7 @@ Papa.parse("data.csv", {
         return {
           fecha: new Date(d["Hora ISO"].trim()),
           impacto: impacto,
-          r: Math.max((impacto * 30) + 3, 4),
+          r: Math.max((impacto * 45) + 6, 6),
           url: d.URL,
           id: d["ID_publicación"],
           views: views,
@@ -55,7 +55,7 @@ Papa.parse("data.csv", {
 
     const plataformas = [...new Set(todosLosPosts.map(d => d.plataforma))];
 
-    const colWidth = 300;
+    const colWidth = 220;
     const marginLeft = 80;
     const marginTop = 50;
     const marginBottom = 20;
