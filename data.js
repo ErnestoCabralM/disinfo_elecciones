@@ -10,16 +10,23 @@ Papa.parse("data.csv", {
     };
 
     const descripciones = {
-      "C00001": "Desde el 3 de abril circula en redes sociales una supuesta encuesta de la empresa mexicana Altica que pone a Rafael López Aliaga en primer lugar de la intención de voto. Sin embargo, la propia empresa ha aclarado que se trata de un fake. El bulo comenzó con una nota en un diario local y, en pocas horas, fue distribuido por 39 cuentas en Facebook, TikTok y X. La red de desinformación ha alcanzado las 171 mil interacciones, entre likes, comentarios, compartidos y visualizaciones.",
-      "C00002": "Desde el 5 de abril circula en redes sociales una supuesta portada del New York Times que pone a Rafael López Aliaga en primer lugar en una encuesta de Ipsos. Sin embargo, diversos equipos de fact-checking han confirmado que se trata de una imagen falsa. El bulo empezó en TikTok y se ha difundido en Facebook y X a través de 27 cuentas. En conjunto, sus posts han alcanzado las 195 mil interacciones, entre likes, comentarios, compartidos y visualizaciones.",
-      "C00003": "Desde el 4 de abril circula en redes sociales un supuesto informe de la encuestadora Ipsos, en el que esta empresa reconocería que la intención de voto de Rafael López Aliaga está sesgada por haber realizado el sondeo durante los feriados de Semana Santa. La propia Ipsos ha desmentido este bulo. Al menos 14 cuentas han difundido esta desinformación en X y Facebook, alcanzando más de 122 mil interacciones, entre likes, comentarios, compartidos y visualizaciones."
+      "C00001": "Desde el 3 de abril circula en redes sociales una supuesta encuesta de la empresa mexicana Altica...",
+      "C00002": "Desde el 5 de abril circula en redes sociales una supuesta portada del New York Times...",
+      "C00003": "Desde el 4 de abril circula en redes sociales un supuesto informe de la encuestadora Ipsos..."
     };
+
+    const isMobile = window.innerWidth < 600;
 
     const todosLosPosts = results.data
       .filter(d => d["Hora ISO"] && d["Hora ISO"].trim() !== "")
       .map(d => {
         const impactoRaw = parseFloat(d.Impacto ? d.Impacto.toString().replace(/"/g, "").replace(",", ".") : "0");
         const impacto = isNaN(impactoRaw) ? 0 : impactoRaw;
+        
+        // CORRECCIÓN 1: Escala de radio adaptativa para que no se salgan en móvil
+        const multiplicador = isMobile ? 32 : 45;
+        const radioBase = isMobile ? 5 : 6;
+
         const views = d.Views && d.Views !== "-" && d.Views !== "null"
           ? parseInt(d.Views.toString().replace(/\./g, "").replace(",", "."))
           : null;
@@ -27,7 +34,7 @@ Papa.parse("data.csv", {
         return {
           fecha: new Date(d["Hora ISO"].trim()),
           impacto: impacto,
-          r: Math.max((impacto * 45) + 6, 6),
+          r: Math.max((impacto * multiplicador) + radioBase, radioBase),
           url: d.URL,
           id: d["ID_publicación"],
           plataforma: d.Plataforma,
@@ -69,20 +76,21 @@ Papa.parse("data.csv", {
     const plataformas = [...new Set(todosLosPosts.map(d => d.plataforma))];
 
     const legend = d3.select("#leyenda-plataformas");
-    legend.selectAll("*").remove(); // Limpiar antes de recrear
+    legend.selectAll("*").remove(); 
     plataformas.forEach(p => {
       const item = legend.append("div").attr("class", "legend-item");
       item.append("div").attr("class", "legend-circle").style("background", colores[p]);
       item.append("span").text(p);
     });
 
-    const marginLeft = 80, marginTop = 50, marginBottom = 20, height = 650;
+    const marginLeft = 80, marginTop = 50, marginBottom = 20;
+    // CORRECCIÓN 2: Altura dinámica para que las burbujas tengan espacio vertical en móvil
+    const height = isMobile ? 850 : 650; 
     let svg, yScale, yAxisG, diasG;
 
     function crearSVG() {
       d3.select("#chart").select("svg").remove();
       const chartEl = document.getElementById("chart");
-      
       const totalW = chartEl.clientWidth || window.innerWidth - 40;
       const width = Math.max(totalW - marginLeft - 20, 150);
 
@@ -103,7 +111,9 @@ Papa.parse("data.csv", {
       const width = crearSVG();
       const yMin = d3.min(posts, d => d.fecha);
       const yMax = d3.max(posts, d => d.fecha);
-      const pad = (yMax - yMin) * 0.05 || 3600000; // Fallback 1 hora si solo hay un post
+      
+      // CORRECCIÓN 3: Padding temporal más amplio (0.15) para que no se corten arriba/abajo
+      const pad = (yMax - yMin) * 0.15 || 3600000; 
 
       yScale.domain([new Date(yMin.getTime() - pad), new Date(yMax.getTime() + pad)]);
 
@@ -121,10 +131,9 @@ Papa.parse("data.csv", {
           .text(d3.timeFormat("%-d de %B")(dia));
       });
 
-      // CORRECCIÓN PARA IPHONE: Jitter inicial
       posts.forEach(d => {
         d.y = yScale(d.fecha);
-        d.x = (width / 2) + (Math.random() - 0.5) * 10; 
+        d.x = (width / 2) + (Math.random() - 0.5) * 20; 
       });
 
       const bubbles = svg.selectAll(".bubble")
@@ -150,19 +159,22 @@ Papa.parse("data.csv", {
         })
         .on("mouseout touchend", () => tooltip.style("opacity", 0));
 
-      // SIMULACIÓN ACTIVA (FUERZA BRUTA PARA DESPLIEGUE)
       const simulation = d3.forceSimulation(posts)
         .alpha(1)
         .velocityDecay(0.3)
-        .force("y", d3.forceY(d => yScale(d.fecha)).strength(2.0)) // Fuerza vertical duplicada
+        .force("y", d3.forceY(d => yScale(d.fecha)).strength(2.5)) 
         .force("x", d3.forceX(width / 2).strength(0.2))
-        .force("collision", d3.forceCollide().radius(d => d.r + 4).iterations(4)) // Más iteraciones
+        .force("collision", d3.forceCollide().radius(d => d.r + 4).iterations(5)) 
         .on("tick", () => {
-          bubbles.attr("cx", d => d.x).attr("cy", d => d.y);
+          bubbles
+            .attr("cx", d => {
+              // CORRECCIÓN 4: Bounding Box para que no se salgan lateralmente
+              return d.x = Math.max(d.r, Math.min(width - d.r, d.x));
+            })
+            .attr("cy", d => d.y);
         });
     }
 
-    // Inicio
     actualizarDescripcion(casoActivo);
     actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
   }
