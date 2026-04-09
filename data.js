@@ -19,7 +19,10 @@ Papa.parse("data.csv", {
     const todosLosPosts = results.data
       .filter(d => d["Hora ISO"] && d["Hora ISO"].trim() !== "")
       .map(d => {
-        const impactoRaw = parseFloat(d.Impacto ? d.Impacto.toString().replace(/"/g, "").replace(",", ".") : "0");
+
+        const impactoRaw = parseFloat(
+          d.Impacto ? d.Impacto.toString().replace(/"/g, "").replace(",", ".") : "0"
+        );
         const impacto = isNaN(impactoRaw) ? 0 : impactoRaw;
 
         const views = d.Views && d.Views !== "-" && d.Views !== "null"
@@ -34,7 +37,7 @@ Papa.parse("data.csv", {
           id: d["ID_publicación"],
 
           plataforma: d.Plataforma,
-          usuario: d.usuario, // 👈 asegúrate que coincide EXACTO con tu CSV
+          usuario: d.usuario,
 
           likes: d.Likes ? parseInt(d.Likes) : 0,
           shares: d.Shares ? parseInt(d.Shares) : 0,
@@ -52,7 +55,6 @@ Papa.parse("data.csv", {
     const filtroCasos = document.getElementById("filtro-casos");
     let casoActivo = casos[0][0];
 
-    // 🟡 FUNCIÓN PARA ACTUALIZAR DESCRIPCIÓN
     function actualizarDescripcion(casoId) {
       const contenedor = document.getElementById("descripcion-caso");
       contenedor.textContent = descripciones[casoId] || "Sin descripción disponible.";
@@ -71,7 +73,7 @@ Papa.parse("data.csv", {
         btn.classList.add("activo");
 
         actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
-        actualizarDescripcion(casoActivo); // 👈 clave
+        actualizarDescripcion(casoActivo);
       });
 
       filtroCasos.appendChild(btn);
@@ -83,17 +85,16 @@ Papa.parse("data.csv", {
 
     const plataformas = [...new Set(todosLosPosts.map(d => d.plataforma))];
 
-    const colWidth = 260;
+    // 🔵 DIMENSIONES
+    const width = 500; // ancho fijo (columna única)
     const marginLeft = 80;
     const marginTop = 50;
     const marginBottom = 20;
     const height = 650;
-    const totalWidth = colWidth * plataformas.length;
-    const svgWidth = totalWidth + marginLeft + 30;
 
     const svgEl = d3.select("#chart")
       .append("svg")
-      .attr("viewBox", `0 0 ${svgWidth} ${height + marginTop + marginBottom}`)
+      .attr("viewBox", `0 0 ${width + marginLeft + 40} ${height + marginTop + marginBottom}`)
       .style("width", "100%")
       .style("height", "auto");
 
@@ -102,28 +103,29 @@ Papa.parse("data.csv", {
 
     const yScale = d3.scaleTime().range([0, height]);
 
-    const xScale = d3.scaleBand()
-      .domain(plataformas)
-      .range([0, totalWidth])
-      .padding(0.2);
+    // 🟡 LEYENDA ARRIBA
+    const legend = d3.select("#chart")
+      .insert("div", "svg")
+      .style("display", "flex")
+      .style("gap", "15px")
+      .style("justify-content", "center")
+      .style("margin-bottom", "10px");
 
-    // títulos de columnas
     plataformas.forEach(p => {
-      svg.append("text")
-        .attr("x", xScale(p) + xScale.bandwidth()/2)
-        .attr("y", -25)
-        .attr("text-anchor", "middle")
-        .attr("fill", colores[p])
-        .attr("font-weight", "bold")
-        .text(p);
+      const item = legend.append("div")
+        .style("display", "flex")
+        .style("align-items", "center")
+        .style("gap", "6px");
 
-      svg.append("line")
-        .attr("x1", xScale(p) + xScale.bandwidth()/2)
-        .attr("x2", xScale(p) + xScale.bandwidth()/2)
-        .attr("y1", 0)
-        .attr("y2", height)
-        .attr("stroke", "#e0e0e0")
-        .attr("stroke-dasharray", "3 3");
+      item.append("div")
+        .style("width", "12px")
+        .style("height", "12px")
+        .style("border-radius", "50%")
+        .style("background", colores[p]);
+
+      item.append("span")
+        .style("font-size", "13px")
+        .text(p);
     });
 
     const yAxisG = svg.append("g");
@@ -158,7 +160,7 @@ Papa.parse("data.csv", {
           diasG.append("line")
             .attr("class", "day-line")
             .attr("x1", -marginLeft)
-            .attr("x2", totalWidth)
+            .attr("x2", width)
             .attr("y1", yDia)
             .attr("y2", yDia);
         }
@@ -172,17 +174,17 @@ Papa.parse("data.csv", {
           .text(d3.timeFormat("%-d de %B")(dia));
       });
 
-      // posiciones base
+      // POSICIÓN BASE → todos al centro
       posts.forEach(d => {
-        d.x = xScale(d.plataforma) + xScale.bandwidth()/2;
+        d.x = width / 2;
         d.y = yScale(d.fecha);
       });
 
-      // simulación
+      // 🔥 SIMULACIÓN SOLO PARA SEPARAR HORIZONTAL
       const simulation = d3.forceSimulation(posts)
-        .force("x", d3.forceX(d => xScale(d.plataforma) + xScale.bandwidth()/2).strength(1))
+        .force("x", d3.forceX(width / 2).strength(0.1))
         .force("y", d3.forceY(d => yScale(d.fecha)).strength(1))
-        .force("collision", d3.forceCollide(d => d.r + 5).iterations(2))
+        .force("collision", d3.forceCollide(d => d.r + 6))
         .stop();
 
       for (let i = 0; i < 300; i++) simulation.tick();
@@ -220,6 +222,6 @@ Papa.parse("data.csv", {
 
     // 🔵 CARGA INICIAL
     actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
-    actualizarDescripcion(casoActivo); // 👈 clave
+    actualizarDescripcion(casoActivo);
   }
 });
