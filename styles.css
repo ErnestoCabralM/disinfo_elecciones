@@ -168,7 +168,38 @@ svg {
 #leyenda-plataformas {
   display: flex;
   justify-content: center;
-  gap: 20px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 15px;
   flex-wrap: wrap;
+}
+
+/* cada item */
+#leyenda-plataformas > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 6px 12px;
+  border-radius: 20px;
+
+  background: #f1f1f1;
+  font-size: 13px;
+  font-weight: 500;
+
+  border: 1px solid #e0e0e0;
+
+  transition: all 0.2s ease;
+}
+
+/* hover sutil */
+#leyenda-plataformas > div:hover {
+  background: #e9e9e9;
+}
+
+/* bolita */
+#leyenda-plataformas span:first-child {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
 }
