@@ -104,9 +104,10 @@ h1 {
   background: white;
   border-radius: 12px;
   padding: 20px 10px; /* Menos padding lateral en móvil */
+  margin: 10px auto; /* Centra el gráfico si es más angosto que el contenedor */
   margin-top: 10px;
   width: 100%;
-  max-width: 100%;
+  max-width: 800px;
   overflow: hidden; /* El JS controla el ancho */
 }
 
