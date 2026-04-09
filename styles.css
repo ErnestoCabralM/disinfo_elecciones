@@ -254,3 +254,22 @@ svg {
 .site-footer p{
   margin: 4px 0;
 }
+
+/* byline */
+.byline{
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 25px;
+
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: #666;
+
+  letter-spacing: 0.3px;
+}
+
+.byline::before{
+  content: "Por ";
+  font-weight: 600;
+  color: #222;
+}
