@@ -153,10 +153,11 @@ Papa.parse("data.csv", {
             .html(`
               <strong>${d.plataforma}</strong><br>
               Difusor: ${d.usuario}<br>
-              Likes: ${d.likes.toLocaleString()}`);
-              Reposts: ${d.shares.toLocaleString()}<br>;
-              Comentarios: ${d.comments.toLocaleString()}<br>
+              Likes: ${d.likes.toLocaleString()}<br>
+              Reposts: ${d.shares.toLocaleString()}<br>
+              Comentarios: ${d.comentarios.toLocaleString()}<br>
               Vistas: ${d.views !== null ? d.views.toLocaleString() : "-"}
+            `);
           tooltip.style("left", (e.pageX + 12) + "px").style("top", (e.pageY - 28) + "px");
         })
         .on("mousemove", function(event) {
