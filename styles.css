@@ -173,6 +173,18 @@ svg {
   flex-wrap: wrap;
 }
 
+.fuente-grafico{
+  max-width: 1100px;
+  margin: 8px auto 0;
+  padding: 0 10px;
+
+  font-size: 12px;
+  color: #777;
+  line-height: 1.4;
+
+  text-align: left;
+}
+
 /* cada item */
 #leyenda-plataformas > div {
   display: flex;
