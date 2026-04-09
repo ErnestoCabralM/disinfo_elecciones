@@ -9,7 +9,6 @@ Papa.parse("data.csv", {
       "TikTok":   "#7A00FF"
     };
 
-    // 🟡 DESCRIPCIONES POR CASO
     const descripciones = {
       "C00001": "Desde el 3 de abril circula en redes sociales una supuesta encuesta de la empresa mexicana Altica que pone a Rafael López Aliaga en primer lugar de la intención de voto. Sin embargo, la propia empresa ha aclarado que se trata de un fake. El bulo comenzó con una nota en un diario local y, en pocas horas, fue distribuido por 39 cuentas en Facebook, TikTok y X. La red de desinformación ha alcanzado las 171 mil interacciones, entre likes, comentarios, compartidos y visualizaciones.",
       "C00002": "Desde el 5 de abril circula en redes sociales una supuesta portada del New York Times que pone a Rafael López Aliaga en primer lugar en una encuesta de Ipsos. Sin embargo, diversos equipos de fact-checking han confirmado que se trata de una imagen falsa. El bulo empezó en TikTok y se ha difundido en Facebook y X a través de 27 cuentas. En conjunto, sus posts han alcanzado las 195 mil interacciones, entre likes, comentarios, compartidos y visualizaciones.",
@@ -19,7 +18,6 @@ Papa.parse("data.csv", {
     const todosLosPosts = results.data
       .filter(d => d["Hora ISO"] && d["Hora ISO"].trim() !== "")
       .map(d => {
-
         const impactoRaw = parseFloat(
           d.Impacto ? d.Impacto.toString().replace(/"/g, "").replace(",", ".") : "0"
         );
@@ -36,16 +34,12 @@ Papa.parse("data.csv", {
           url: d.URL,
           id: d["ID_publicación"],
           link_archivo: d.link_archivo,
-
           plataforma: d.Plataforma,
           usuario: d.usuario,
-
           likes: d.Likes ? parseInt(d.Likes) : 0,
           shares: d.Shares ? parseInt(d.Shares) : 0,
           comentarios: d.Comments ? parseInt(d.Comments) : 0,
-
           views: views,
-
           color: colores[d.Plataforma] || "#999999",
           id_caso: d.ID_caso,
           nombre_caso: d.Nombre_caso
@@ -61,24 +55,19 @@ Papa.parse("data.csv", {
       contenedor.textContent = descripciones[casoId] || "Sin descripción disponible.";
     }
 
-    // BOTONES
     casos.forEach(([id, nombre]) => {
       const btn = document.createElement("button");
       btn.className = "btn-caso" + (id === casoActivo ? " activo" : "");
       btn.textContent = nombre;
-
       btn.addEventListener("click", () => {
         casoActivo = id;
-
         document.querySelectorAll(".btn-caso").forEach(b => b.classList.remove("activo"));
         btn.classList.add("activo");
-
         actualizarDescripcion(casoActivo);
         setTimeout(() => {
           actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
         }, 100);
       });
-
       filtroCasos.appendChild(btn);
     });
 
@@ -88,25 +77,27 @@ Papa.parse("data.csv", {
 
     const plataformas = [...new Set(todosLosPosts.map(d => d.plataforma))];
 
-    // 🔵 DIMENSIONES
-    const width = 400; // ancho fijo (columna única)
+    // DIMENSIONES — calculadas desde el DOM real
     const marginLeft = 80;
     const marginTop = 50;
     const marginBottom = 20;
     const height = 650;
 
+    const chartEl = document.getElementById("chart");
+    const totalW = chartEl.getBoundingClientRect().width - 40;
+    const width = Math.max(totalW - marginLeft, 150);
+
     const svgEl = d3.select("#chart")
       .append("svg")
-      .attr("viewBox", `0 0 ${width + marginLeft + 40} ${height + marginTop + marginBottom}`)
-      .style("width", "100%")
-      .style("height", "auto");
+      .attr("width", totalW)
+      .attr("height", height + marginTop + marginBottom);
 
     const svg = svgEl.append("g")
       .attr("transform", `translate(${marginLeft},${marginTop})`);
 
     const yScale = d3.scaleTime().range([0, height]);
 
-    // 🟡 LEYENDA ARRIBA
+    // LEYENDA
     const legend = d3.select("#chart")
       .insert("div", "svg")
       .attr("id", "leyenda-plataformas");
@@ -132,7 +123,6 @@ Papa.parse("data.csv", {
     const diasG = svg.append("g");
 
     function actualizarGrafico(posts) {
-
       const yMin = d3.min(posts, d => d.fecha);
       const yMax = d3.max(posts, d => d.fecha);
       const pad = (yMax - yMin) * 0.05;
@@ -145,7 +135,6 @@ Papa.parse("data.csv", {
           .tickFormat(d3.timeFormat("%H:%M"))
       );
 
-      // DÍAS
       diasG.selectAll("*").remove();
 
       const dias = d3.timeDay.range(
@@ -174,13 +163,12 @@ Papa.parse("data.csv", {
           .text(d3.timeFormat("%-d de %B")(dia));
       });
 
-      // POSICIÓN BASE → todos al centro
+      // Posición inicial centrada en el ancho real
       posts.forEach(d => {
         d.x = width / 2;
         d.y = yScale(d.fecha);
       });
 
-      // 🔥 SIMULACIÓN SOLO PARA SEPARAR HORIZONTAL
       const simulation = d3.forceSimulation(posts)
         .force("x", d3.forceX(width / 2).strength(0.1))
         .force("y", d3.forceY(d => yScale(d.fecha)).strength(1))
@@ -220,10 +208,10 @@ Papa.parse("data.csv", {
         .on("click", (event, d) => window.open(d.link_archivo, "_blank"));
     }
 
-    // 🔵 CARGA INICIAL
-      actualizarDescripcion(casoActivo);
-      setTimeout(() => {
-        actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
-      }, 100);
+    // CARGA INICIAL
+    actualizarDescripcion(casoActivo);
+    setTimeout(() => {
+      actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
+    }, 100);
   }
 });
