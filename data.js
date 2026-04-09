@@ -77,31 +77,8 @@ Papa.parse("data.csv", {
 
     const plataformas = [...new Set(todosLosPosts.map(d => d.plataforma))];
 
-    // DIMENSIONES — calculadas desde el DOM real
-    const marginLeft = 80;
-    const marginTop = 50;
-    const marginBottom = 20;
-    const height = 650;
-
-    const chartEl = document.getElementById("chart");
-    const totalW = chartEl.getBoundingClientRect().width - 40;
-    const width = Math.max(totalW - marginLeft, 150);
-
-    const svgEl = d3.select("#chart")
-      .append("svg")
-      .attr("width", totalW)
-      .attr("height", height + marginTop + marginBottom);
-
-    const svg = svgEl.append("g")
-      .attr("transform", `translate(${marginLeft},${marginTop})`);
-
-    const yScale = d3.scaleTime().range([0, height]);
-
-    // LEYENDA
-    const legend = d3.select("#chart")
-      .insert("div", "svg")
-      .attr("id", "leyenda-plataformas");
-
+    // LEYENDA (se construye una sola vez)
+    const legend = d3.select("#leyenda-plataformas");
     plataformas.forEach(p => {
       const item = legend.append("div")
         .style("display", "flex")
@@ -119,10 +96,42 @@ Papa.parse("data.csv", {
         .text(p);
     });
 
-    const yAxisG = svg.append("g");
-    const diasG = svg.append("g");
+    // CONSTANTES FIJAS
+    const marginLeft = 80;
+    const marginTop = 50;
+    const marginBottom = 20;
+    const height = 650;
+
+    // Variables de SVG — se recrean en cada llamada
+    let svg, yScale, yAxisG, diasG;
+
+    function crearSVG() {
+      // Eliminar SVG anterior
+      d3.select("#chart").select("svg").remove();
+
+      // Leer ancho real del contenedor en este momento
+      const chartEl = document.getElementById("chart");
+      const totalW = chartEl.getBoundingClientRect().width - 40;
+      const width = Math.max(totalW - marginLeft, 150);
+
+      const svgEl = d3.select("#chart")
+        .append("svg")
+        .attr("width", totalW)
+        .attr("height", height + marginTop + marginBottom);
+
+      svg = svgEl.append("g")
+        .attr("transform", `translate(${marginLeft},${marginTop})`);
+
+      yScale = d3.scaleTime().range([0, height]);
+      yAxisG = svg.append("g");
+      diasG = svg.append("g");
+
+      return width;
+    }
 
     function actualizarGrafico(posts) {
+      const width = crearSVG(); // ancho real leído en este momento
+
       const yMin = d3.min(posts, d => d.fecha);
       const yMax = d3.max(posts, d => d.fecha);
       const pad = (yMax - yMin) * 0.05;
@@ -163,7 +172,6 @@ Papa.parse("data.csv", {
           .text(d3.timeFormat("%-d de %B")(dia));
       });
 
-      // Posición inicial centrada en el ancho real
       posts.forEach(d => {
         d.x = width / 2;
         d.y = yScale(d.fecha);
@@ -212,6 +220,6 @@ Papa.parse("data.csv", {
     actualizarDescripcion(casoActivo);
     setTimeout(() => {
       actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
-    }, 100);
+    }, 300); // 300ms para dar más tiempo a iOS
   }
 });
