@@ -159,16 +159,16 @@ svg {
 }
 
 /* LEYENDA */
-#leyenda-tam {
-  display: flex;
-  align-items: flex-end;
-  gap: 16px;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
 .col-title {
   font-size: 13px;
   font-weight: bold;
   text-anchor: middle;
+}
+
+#leyenda-plataformas {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
 }
