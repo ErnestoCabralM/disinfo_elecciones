@@ -214,7 +214,7 @@ Papa.parse("data.csv", {
             .style("top", (event.pageY - 28) + "px");
         })
         .on("mouseout", () => tooltip.style("opacity", 0))
-        .on("click", (event, d) => window.open(d.url, "_blank"));
+        .on("click", (event, d) => window.open(d.link_archivo, "_blank"));
     }
 
     // 🔵 CARGA INICIAL
