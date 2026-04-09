@@ -150,7 +150,13 @@ Papa.parse("data.csv", {
         .on("mouseover touchstart", function(event, d) {
           const e = event.touches ? event.touches[0] : event;
           tooltip.style("opacity", 1)
-            .html(`<strong>${d.plataforma}</strong><br>Difusor: ${d.usuario}<br>Likes: ${d.likes.toLocaleString()}`);
+            .html(`
+              <strong>${d.plataforma}</strong><br>
+              Difusor: ${d.usuario}<br>
+              Likes: ${d.likes.toLocaleString()}`);
+              Reposts: ${d.shares.toLocaleString()}<br>;
+              Comentarios: ${d.comments.toLocaleString()}<br>
+              Vistas: ${d.views !== null ? d.views.toLocaleString() : "-"}
           tooltip.style("left", (e.pageX + 12) + "px").style("top", (e.pageY - 28) + "px");
         })
         .on("mousemove", function(event) {
