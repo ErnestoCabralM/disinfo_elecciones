@@ -10,9 +10,9 @@ Papa.parse("data.csv", {
     };
 
     const descripciones = {
-      "C00001": "Desde el 3 de abril circula en redes sociales una supuesta encuesta de la empresa mexicana Altica...",
-      "C00002": "Desde el 5 de abril circula en redes sociales una supuesta portada del New York Times...",
-      "C00003": "Desde el 4 de abril circula en redes sociales un supuesto informe de la encuestadora Ipsos..."
+      "C00001": "Desde el 3 de abril circula en redes sociales una supuesta encuesta de la empresa mexicana Altica que pone a Rafael López Aliaga en primer lugar de la intención de voto. Sin embargo, la propia empresa ha aclarado que se trata de un fake. El bulo comenzó con una nota en un diario local y, en pocas horas, fue distribuido por 39 cuentas en Facebook, TikTok y X. La red de desinformación ha alcanzado las 171 mil interacciones, entre likes, comentarios, compartidos y visualizaciones.",
+      "C00002": "Desde el 5 de abril circula en redes sociales una supuesta portada del New York Times que pone a Rafael López Aliaga en primer lugar en una encuesta de Ipsos. Sin embargo, diversos equipos de fact-checking han confirmado que se trata de una imagen falsa. El bulo empezó en TikTok y se ha difundido en Facebook y X a través de 27 cuentas. En conjunto, sus posts han alcanzado las 195 mil interacciones, entre likes, comentarios, compartidos y visualizaciones.",
+      "C00003": "Desde el 4 de abril circula en redes sociales un supuesto informe de la encuestadora Ipsos, en el que esta empresa reconocería que la intención de voto de Rafael López Aliaga está sesgada por haber realizado el sondeo durante los feriados de Semana Santa. La propia Ipsos ha desmentido este bulo. Al menos 14 cuentas han difundido esta desinformación en X y Facebook, alcanzando más de 122 mil interacciones, entre likes, comentarios, compartidos y visualizaciones."
     };
 
     const isMobile = window.innerWidth < 600;
