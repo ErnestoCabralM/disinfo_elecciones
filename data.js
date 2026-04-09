@@ -73,8 +73,10 @@ Papa.parse("data.csv", {
         document.querySelectorAll(".btn-caso").forEach(b => b.classList.remove("activo"));
         btn.classList.add("activo");
 
-        actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
         actualizarDescripcion(casoActivo);
+        setTimeout(() => {
+          actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
+        }, 100);
       });
 
       filtroCasos.appendChild(btn);
@@ -219,7 +221,9 @@ Papa.parse("data.csv", {
     }
 
     // 🔵 CARGA INICIAL
-    actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
-    actualizarDescripcion(casoActivo);
+      actualizarDescripcion(casoActivo);
+      setTimeout(() => {
+        actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
+      }, 100);
   }
 });
