@@ -86,7 +86,7 @@ Papa.parse("data.csv", {
     const plataformas = [...new Set(todosLosPosts.map(d => d.plataforma))];
 
     // 🔵 DIMENSIONES
-    const width = 500; // ancho fijo (columna única)
+    const width = 400; // ancho fijo (columna única)
     const marginLeft = 80;
     const marginTop = 50;
     const marginBottom = 20;
