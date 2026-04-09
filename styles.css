@@ -4,10 +4,20 @@ body {
   margin: 0;
 }
 
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
 .container {
   max-width: 1100px;
   margin: 0 auto;
   padding: 20px;
+  flex: 1;
 }
 
 .site-header{
