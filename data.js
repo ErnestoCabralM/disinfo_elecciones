@@ -106,10 +106,7 @@ Papa.parse("data.csv", {
     // 🟡 LEYENDA ARRIBA
     const legend = d3.select("#chart")
       .insert("div", "svg")
-      .style("display", "flex")
-      .style("gap", "15px")
-      .style("justify-content", "center")
-      .style("margin-bottom", "10px");
+      .attr("id", "leyenda-plataformas");
 
     plataformas.forEach(p => {
       const item = legend.append("div")
