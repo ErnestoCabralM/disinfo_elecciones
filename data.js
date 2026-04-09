@@ -11,7 +11,7 @@ Papa.parse("data.csv", {
 
     // 🟡 DESCRIPCIONES POR CASO
     const descripciones = {
-      "C00001": "Una encuesta falsa comenzó a circular la tarde del 4 de abril. Varias cuentas amplificaron el contenido en pocas horas, concentrando el mayor volumen de interacciones en X.",
+      "C00001": "Desde el 3 de abril circula en redes sociales una supuesta encuesta de la empresa mexicana Altica que pone a Rafael López Aliaga en primer lugar de la intención de voto. Sin embargo, la propia empresa ha aclarado que se trata de un fake. El bulo comenzó con una nota en un diario local y, en pocas horas, fue distribuido por 39 cuentas en Facebook, TikTok y X. La red de desinformación ha alcanzado las 171 mil interacciones, entre likes, comentarios, compartidos y visualizaciones.",
       "C00002": "Este caso muestra una difusión más lenta pero sostenida, con presencia en múltiples plataformas y picos de actividad al día siguiente.",
       "C00003": "El contenido fue inicialmente marginal, pero logró escalar debido a cuentas con alto alcance que lo replicaron."
     };
