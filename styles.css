@@ -203,3 +203,12 @@ svg {
   height: 10px;
   border-radius: 50%;
 }
+
+.nota-grafico {
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  font-style: italic;
+}
