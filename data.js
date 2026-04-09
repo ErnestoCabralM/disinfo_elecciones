@@ -69,6 +69,7 @@ Papa.parse("data.csv", {
     const plataformas = [...new Set(todosLosPosts.map(d => d.plataforma))];
 
     const legend = d3.select("#leyenda-plataformas");
+    legend.selectAll("*").remove(); // Limpiar antes de recrear
     plataformas.forEach(p => {
       const item = legend.append("div").attr("class", "legend-item");
       item.append("div").attr("class", "legend-circle").style("background", colores[p]);
@@ -82,7 +83,6 @@ Papa.parse("data.csv", {
       d3.select("#chart").select("svg").remove();
       const chartEl = document.getElementById("chart");
       
-      // Corrección iOS: Usar clientWidth con fallback
       const totalW = chartEl.clientWidth || window.innerWidth - 40;
       const width = Math.max(totalW - marginLeft - 20, 150);
 
@@ -103,17 +103,16 @@ Papa.parse("data.csv", {
       const width = crearSVG();
       const yMin = d3.min(posts, d => d.fecha);
       const yMax = d3.max(posts, d => d.fecha);
-      const pad = (yMax - yMin) * 0.05;
+      const pad = (yMax - yMin) * 0.05 || 3600000; // Fallback 1 hora si solo hay un post
 
-      yScale.domain([new Date(yMin - pad), new Date(yMax + pad)]);
+      yScale.domain([new Date(yMin.getTime() - pad), new Date(yMax.getTime() + pad)]);
 
       yAxisG.call(d3.axisLeft(yScale).ticks(d3.timeHour.every(2)).tickFormat(d3.timeFormat("%H:%M")));
       diasG.selectAll("*").remove();
 
-      // Dibujar líneas de días
       d3.timeDay.range(d3.timeDay.floor(yMin), d3.timeDay.offset(d3.timeDay.floor(yMax), 1)).forEach(dia => {
         const yDia = yScale(dia);
-        if (yDia > 0 && yDia < height) {
+        if (yDia >= 0 && yDia <= height) {
           diasG.append("line").attr("class", "day-line").attr("x1", -marginLeft).attr("x2", width).attr("y1", yDia).attr("y2", yDia);
         }
         diasG.append("text").attr("class", "day-label")
@@ -122,13 +121,12 @@ Papa.parse("data.csv", {
           .text(d3.timeFormat("%-d de %B")(dia));
       });
 
-      // Posicionamiento inicial manual antes de la simulación
+      // CORRECCIÓN PARA IPHONE: Jitter inicial
       posts.forEach(d => {
-        d.x = width / 2;
         d.y = yScale(d.fecha);
+        d.x = (width / 2) + (Math.random() - 0.5) * 10; 
       });
 
-      // Configuración de burbujas
       const bubbles = svg.selectAll(".bubble")
         .data(posts)
         .enter()
@@ -136,10 +134,15 @@ Papa.parse("data.csv", {
         .attr("class", "bubble")
         .attr("r", d => d.r)
         .attr("fill", d => d.color)
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
         .style("cursor", "pointer")
+        .style("pointer-events", "all") 
         .on("mouseover touchstart", function(event, d) {
+          const e = event.touches ? event.touches[0] : event;
           tooltip.style("opacity", 1)
             .html(`<strong>${d.plataforma}</strong><br>Difusor: ${d.usuario}<br>Likes: ${d.likes.toLocaleString()}`);
+          tooltip.style("left", (e.pageX + 12) + "px").style("top", (e.pageY - 28) + "px");
         })
         .on("mousemove", function(event) {
           const e = event.touches ? event.touches[0] : event;
@@ -147,21 +150,19 @@ Papa.parse("data.csv", {
         })
         .on("mouseout touchend", () => tooltip.style("opacity", 0));
 
-      // Simulación activa para iOS (reemplaza el bucle for estático)
+      // SIMULACIÓN ACTIVA (FUERZA BRUTA PARA DESPLIEGUE)
       const simulation = d3.forceSimulation(posts)
-        .force("x", d3.forceX(width / 2).strength(0.15))
-        .force("y", d3.forceY(d => yScale(d.fecha)).strength(1))
-        .force("collision", d3.forceCollide(d => d.r + 4))
-        .alphaDecay(0.08); // Se detiene rápido para no gastar batería
-
-      simulation.on("tick", () => {
-        bubbles
-          .attr("cx", d => d.x)
-          .attr("cy", d => d.y);
-      });
+        .alpha(1)
+        .velocityDecay(0.3)
+        .force("y", d3.forceY(d => yScale(d.fecha)).strength(2.0)) // Fuerza vertical duplicada
+        .force("x", d3.forceX(width / 2).strength(0.2))
+        .force("collision", d3.forceCollide().radius(d => d.r + 4).iterations(4)) // Más iteraciones
+        .on("tick", () => {
+          bubbles.attr("cx", d => d.x).attr("cy", d => d.y);
+        });
     }
 
-    // Carga inicial
+    // Inicio
     actualizarDescripcion(casoActivo);
     actualizarGrafico(todosLosPosts.filter(d => d.id_caso === casoActivo));
   }
