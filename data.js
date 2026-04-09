@@ -12,7 +12,7 @@ Papa.parse("data.csv", {
     // 🟡 DESCRIPCIONES POR CASO
     const descripciones = {
       "C00001": "Desde el 3 de abril circula en redes sociales una supuesta encuesta de la empresa mexicana Altica que pone a Rafael López Aliaga en primer lugar de la intención de voto. Sin embargo, la propia empresa ha aclarado que se trata de un fake. El bulo comenzó con una nota en un diario local y, en pocas horas, fue distribuido por 39 cuentas en Facebook, TikTok y X. La red de desinformación ha alcanzado las 171 mil interacciones, entre likes, comentarios, compartidos y visualizaciones.",
-      "C00002": "Este caso muestra una difusión más lenta pero sostenida, con presencia en múltiples plataformas y picos de actividad al día siguiente.",
+      "C00002": "Desde el 5 de abril circula en redes sociales una supuesta portada del New York Times que pone a Rafael López Aliaga en primer lugar en una encuesta de Ipsos. Sin embargo, diversos equipos de fact-checking han confirmado que se trata de una imagen falsa. El bulo empezó en TikTok y se ha difundido en Facebook y X a través de 27 cuentas. En conjunto, sus posts han alcanzado las 195 mil interacciones, entre likes, comentarios, compartidos y visualizaciones.",
       "C00003": "El contenido fue inicialmente marginal, pero logró escalar debido a cuentas con alto alcance que lo replicaron."
     };
 
