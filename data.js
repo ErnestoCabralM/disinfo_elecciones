@@ -164,7 +164,13 @@ Papa.parse("data.csv", {
           const e = event.touches ? event.touches[0] : event;
           tooltip.style("left", (e.pageX + 12) + "px").style("top", (e.pageY - 28) + "px");
         })
-        .on("mouseout touchend", () => tooltip.style("opacity", 0));
+        .on("mouseout touchend", () => tooltip.style("opacity", 0))
+
+        .on("click", (event, d) => {
+          if (d.link_archivo) {
+            window.open(d.link_archivo, "_blank");
+          }
+        });
 
       const simulation = d3.forceSimulation(posts)
         .alpha(1)
