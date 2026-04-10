@@ -37,6 +37,7 @@ Papa.parse("data.csv", {
           r: Math.max((impacto * multiplicador) + radioBase, radioBase),
           url: d.URL,
           id: d["ID_publicación"],
+          link_archivo: d.link_archivo,
           plataforma: d.Plataforma,
           usuario: d.usuario,
           likes: d.Likes ? parseInt(d.Likes) : 0,
